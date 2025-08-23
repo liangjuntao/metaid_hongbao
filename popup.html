@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 200px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .status {
+      text-align: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      background: #4CAF50;
+      color: white;
+    }
+    .status.paused {
+      background: #f44336;
+    }
+    button {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-on { background: #4CAF50; color: white; }
+    .btn-off { background: #f44336; color: white; }
+    .stats {
+      text-align: center;
+      margin: 10px 0;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .stats-number {
+      font-weight: bold;
+      color: #2196F3;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="status" id="status">运行中</div>
+  <div class="stats">
+    抢到红包: <span class="stats-number" id="successCount">0</span> 次
+  </div>
+  <button class="btn-off" id="toggleBtn">暂停</button>
+  <script src="popup.js"></script>
+</body>
+</html> 

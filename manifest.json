@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "MetaID 红包助手",
+  "version": "1.0.0",
+  "description": "自动抢MetaID红包的Chrome插件",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.show.now/*",
+    "*://show.now/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.show.now/*",
+        "*://show.now/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MetaID 红包助手"
+  },
+  "icons": {
+    "128": "hongbao_icon_128x128.png"
+  }
+} 
