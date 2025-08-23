@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
   const status = document.getElementById('status');
   const toggleBtn = document.getElementById('toggleBtn');
-  const successCountElement = document.getElementById('successCount');
   let isEnabled = false; // 默认暂停状态
 
   function updateUI() {
@@ -56,15 +55,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // 获取content script的实际状态和统计信息
+  // 获取content script的实际状态
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     if (tabs && tabs.length > 0) {
       chrome.tabs.sendMessage(tabs[0].id, {action: 'getStatus'}, function(response) {
         if (response && response.isEnabled !== undefined) {
           isEnabled = response.isEnabled;
-        }
-        if (response && response.successCount !== undefined) {
-          successCountElement.textContent = response.successCount;
         }
         updateUI();
       });
@@ -72,17 +68,4 @@ document.addEventListener('DOMContentLoaded', function() {
       updateUI();
     }
   });
-
-  // 定期更新统计信息
-  setInterval(() => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs && tabs.length > 0) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'getStats'}, function(response) {
-          if (response && response.successCount !== undefined) {
-            successCountElement.textContent = response.successCount;
-          }
-        });
-      }
-    });
-  }, 1000); // 每秒更新一次统计
 }); 

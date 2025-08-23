@@ -10,7 +10,7 @@ if (!window.metaidHongbaoLoaded) {
   let observer = null; // DOM变化监听器
   let lastCheckTime = 0; // 记录上次检查时间
   let checkCount = 0; // 检查次数统计
-  let successCount = 0; // 抢到红包次数统计
+
 
 
   // 开始监控
@@ -179,8 +179,7 @@ if (!window.metaidHongbaoLoaded) {
         if (rect.width > 0 && rect.height > 0) {
           button.dataset.openClicked = 'true'; // 标记为已点击
           button.click();
-          successCount++; // 增加成功次数
-          console.log(`✅ Open按钮已点击，成功抢到第${successCount}个红包！`);
+          console.log('✅ Open按钮已点击');
           openButtonFound = true;
         }
       }
@@ -264,10 +263,7 @@ if (!window.metaidHongbaoLoaded) {
       sendResponse({ success: true });
       return true;
     } else if (request.action === 'getStatus') {
-      sendResponse({ isEnabled: isEnabled, successCount: successCount });
-      return true;
-    } else if (request.action === 'getStats') {
-      sendResponse({ successCount: successCount });
+      sendResponse({ isEnabled: isEnabled });
       return true;
     }
     
