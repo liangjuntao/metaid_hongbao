@@ -11,8 +11,6 @@ if (!window.metaidHongbaoLoaded) {
   let lastCheckTime = 0; // 记录上次检查时间
   let checkCount = 0; // 检查次数统计
 
-
-
   // 开始监控
   function startMonitoring() {
     console.log(' 开始监控红包...');
@@ -126,7 +124,7 @@ if (!window.metaidHongbaoLoaded) {
     console.log('👁️ DOM变化监听已启动');
   }
 
-  // 检查并点击红包
+  // 检查并点击红包 - 优化版本，适配新的按钮结构
   function checkAndClickHongbao() {
     const now = Date.now();
     lastCheckTime = now;
@@ -138,6 +136,8 @@ if (!window.metaidHongbaoLoaded) {
     if (hongbaoElements.length === 0) {
       hongbaoElements = document.querySelectorAll('div:not([data-clicked])');
     }
+    
+    let hongbaoClicked = false;
     
     if (hongbaoElements.length > 0) {
       hongbaoElements.forEach((element, index) => {
@@ -152,38 +152,96 @@ if (!window.metaidHongbaoLoaded) {
             window[clickKey] = now; // 记录点击时间
             element.dataset.clicked = 'true'; // 标记为已点击
             element.click();
+            hongbaoClicked = true;
             console.log(`🎁 发现"Grab a Candy Bag"红包，已点击`);
           }
         }
       });
     }
 
-    // 检查并点击Open按钮，或关闭已开完的红包
-    const openButtons = document.querySelectorAll('button, div, span');
-    let openButtonFound = false;
+    // 检查红包弹窗中的新按钮结构
+    let giftButtonFound = false;
     let needCloseHongbao = false;
     
-    // 检查是否需要关闭红包
+    // 检查是否需要关闭红包 - 扩展检测条件
     const allText = document.body.textContent || '';
-    if (allText.includes('All the Candy Bags have been opened') || 
-        allText.includes('All candy bags have been opened') ||
-        allText.includes('No more candy bags available')) {
-      console.log('📋 检测到红包已开完，准备关闭');
-      needCloseHongbao = true;
+    const closeConditions = [
+      'All the Candy Bags have been opened',
+      'All candy bags have been opened', 
+      'No more candy bags available',
+      'Candy bags are empty',
+      'No candy bags left',
+      'All bags opened',
+      '红包已开完',
+      '没有更多红包',
+      '所有红包已打开'
+    ];
+    
+    for (const condition of closeConditions) {
+      if (allText.includes(condition)) {
+        console.log(`📋 检测到红包已开完: ${condition}，准备关闭`);
+        needCloseHongbao = true;
+        break;
+      }
     }
     
-    openButtons.forEach(button => {
-      const text = button.textContent?.trim().toLowerCase();
-      if ((text === 'open' || text === '打开') && !button.dataset.openClicked) {
+    // 查找新的礼物按钮 - 根据你提供的HTML结构
+    const giftButtons = document.querySelectorAll('div.gift-button-gradient, div[class*="gift-button"], div[class*="rounded-full"][class*="cursor-pointer"]');
+    
+    giftButtons.forEach(button => {
+      // 检查是否包含礼物图标
+      const hasGiftIcon = button.querySelector('img[src*="gift"], img[src*="mvc_gift"], svg') || 
+                         button.innerHTML.includes('gift') ||
+                         button.innerHTML.includes('mvc_gift');
+      
+      // 检查是否在红包弹窗中
+      const isInHongbaoModal = button.closest('.modal') || 
+                              button.closest('[role="dialog"]') ||
+                              button.closest('.popup') ||
+                              button.closest('.overlay') ||
+                              button.closest('[class*="absolute"]');
+      
+      if (hasGiftIcon && isInHongbaoModal && !button.dataset.giftClicked) {
         const rect = button.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
-          button.dataset.openClicked = 'true'; // 标记为已点击
+          button.dataset.giftClicked = 'true'; // 标记为已点击
           button.click();
-          console.log('✅ Open按钮已点击');
-          openButtonFound = true;
+          console.log('🎁 礼物按钮已点击');
+          giftButtonFound = true;
         }
       }
     });
+    
+    // 如果没找到新的礼物按钮，尝试更宽泛的搜索
+    if (!giftButtonFound) {
+      const allClickableElements = document.querySelectorAll('div[class*="cursor-pointer"], button, [role="button"]');
+      
+      allClickableElements.forEach(element => {
+        // 检查是否在红包弹窗中且包含礼物相关元素
+        const isInModal = element.closest('.modal') || 
+                         element.closest('[role="dialog"]') ||
+                         element.closest('.popup') ||
+                         element.closest('.overlay') ||
+                         element.closest('[class*="absolute"]');
+        
+        const hasGiftContent = element.innerHTML.includes('gift') ||
+                              element.innerHTML.includes('mvc_gift') ||
+                              element.querySelector('img[src*="gift"]') ||
+                              element.querySelector('img[src*="mvc_gift"]') ||
+                              element.textContent.includes('Candy Bag') ||
+                              element.textContent.includes('Giveaway');
+        
+        if (isInModal && hasGiftContent && !element.dataset.giftClicked) {
+          const rect = element.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            element.dataset.giftClicked = 'true';
+            element.click();
+            console.log('🎁 红包弹窗中的礼物元素已点击');
+            giftButtonFound = true;
+          }
+        }
+      });
+    }
     
     // 检查并点击X按钮关闭红包
     const closeButtons = document.querySelectorAll('button, div, span');
@@ -202,15 +260,18 @@ if (!window.metaidHongbaoLoaded) {
         if (rect.width > 0 && rect.height > 0) {
           button.click();
           console.log('❌ X按钮已点击，红包已关闭');
-          openButtonFound = true;
+          giftButtonFound = true;
         }
       }
     });
     
-    // 如果没有找到Open按钮或需要关闭红包，立即模拟ESC键
-    if (((!openButtonFound && hongbaoElements.length > 0) || needCloseHongbao)) {
-      simulateEscKey();
-    } else if (openButtonFound) {
+    // 处理红包关闭逻辑
+    if (needCloseHongbao || (hongbaoClicked && !giftButtonFound)) {
+      // 延迟一下再关闭，给红包弹窗时间显示
+      setTimeout(() => {
+        simulateEscKey();
+      }, 500);
+    } else if (giftButtonFound) {
       console.log('✅ 红包已处理完成');
     }
   }
